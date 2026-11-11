@@ -1,41 +1,19 @@
-This README file contains information on the contents of the meta-mokhles layer.
-
-Please see the corresponding sections below for details.
-
-Dependencies
+meta-mokhles
 ============
 
-  URI: <first dependency>
-  branch: <branch name>
+My first Yocto layer (Yocto Project 6.0 "Wrynose").
 
-  URI: <second dependency>
-  branch: <branch name>
+Contents:
+- mokhles-image: minimal Linux image with CAN support and my own programs
+- packagegroup-mokhles-can: CAN tools, vcan driver, startup script, sender and receiver
+- linux-yocto bbappend: enables CAN in the kernel (can.cfg)
+- can-sender / can-receiver: C programs using SocketCAN on vcan0
+- can-setup: init script that creates vcan0 at boot
 
-  .
-  .
-  .
+Build:
+    bitbake mokhles-image
 
-Patches
-=======
+Run:
+    runqemu mokhles-image nographic slirp snapshot
 
-Please submit any patches against the meta-mokhles layer to the xxxx mailing list (xxxx@zzzz.org)
-and cc: the maintainer:
-
-Maintainer: XXX YYYYYY <xxx.yyyyyy@zzzzz.com>
-
-Table of Contents
-=================
-
-  I. Adding the meta-mokhles layer to your build
- II. Misc
-
-
-I. Adding the meta-mokhles layer to your build
-=================================================
-
-Run 'bitbake-layers add-layer meta-mokhles'
-
-II. Misc
-========
-
---- replace with specific information about the meta-mokhles layer ---
+Depends on: openembedded-core, meta-o
