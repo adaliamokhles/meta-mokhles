@@ -1,0 +1,18 @@
+#!/bin/sh
+# Startup script: tells programs which DNS server to use (the internet "phone book")
+# 10.0.2.3 = the DNS server QEMU's slirp network always provides
+
+case "$1" in
+  start)
+    echo "Setting DNS server 10.0.2.3..."
+    echo "nameserver 10.0.2.3" > /etc/resolv.conf
+    ;;
+  stop)
+    ;;
+  *)
+    echo "Usage: $0 {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0
