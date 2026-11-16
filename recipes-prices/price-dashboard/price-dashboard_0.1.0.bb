@@ -4,7 +4,7 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda
 
 # Same repository and commit as price-fetcher
 SRC_URI = "git://github.com/adaliamokhles/price-system.git;protocol=https;branch=main"
-SRCREV = "b5f89b71ad4be768936e88147438bf3459ef4273"
+SRCREV = "46868cfb62d4ac6156ba35c73798579c5fe223de"
 
 # This recipe builds the project in the price-dashboard/ folder
 S = "${UNPACKDIR}/${BP}/price-dashboard"
