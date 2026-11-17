@@ -1,0 +1,93 @@
+{
+    "version": "1.0",
+    "description": "TLB Infinitum - an embedded Linux device that puts live market prices on a CAN bus and serves a web dashboard. Yocto Project 6.0 'wrynose'.",
+    "expires": "2030-05-31",
+    "sources": {
+        "bitbake": {
+            "git-remote": {
+                "branch": "2.18",
+                "rev": "2.18",
+                "uri": "https://git.openembedded.org/bitbake"
+            }
+        },
+        "openembedded-core": {
+            "git-remote": {
+                "branch": "wrynose",
+                "rev": "wrynose",
+                "uri": "https://git.openembedded.org/openembedded-core"
+            }
+        },
+        "meta-yocto": {
+            "git-remote": {
+                "branch": "wrynose",
+                "rev": "wrynose",
+                "uri": "https://git.yoctoproject.org/meta-yocto"
+            }
+        },
+        "meta-openembedded": {
+            "git-remote": {
+                "branch": "wrynose",
+                "rev": "wrynose",
+                "uri": "https://git.openembedded.org/meta-openembedded"
+            }
+        },
+        "meta-mokhles": {
+            "git-remote": {
+                "branch": "main",
+                "rev": "main",
+                "uri": "https://github.com/adaliamokhles/meta-mokhles.git"
+            }
+        }
+    },
+    "bitbake-setup": {
+        "configurations": [
+            {
+                "bb-layers": [
+                    "openembedded-core/meta",
+                    "meta-yocto/meta-yocto-bsp",
+                    "meta-yocto/meta-poky",
+                    "meta-openembedded/meta-oe",
+                    "meta-mokhles"
+                ],
+                "configurations": [
+                    {
+                        "description": "TLB Infinitum, built from source (slowest first build, no network dependency beyond the sources)",
+                        "name": "tlb-infinitum"
+                    },
+                    {
+                        "description": "TLB Infinitum, using the Yocto Project sstate mirror so most packages are downloaded prebuilt. Much faster, but needs a fast and reliable connection.",
+                        "name": "tlb-infinitum-fast",
+                        "oe-fragments": [
+                            "core/yocto/sstate-mirror-cdn"
+                        ]
+                    }
+                ],
+                "oe-fragments-one-of": {
+                    "distro": {
+                        "description": "Target distributions",
+                        "options": [
+                            {
+                                "description": "Yocto Project Reference Distro (what this project was developed and tested with)",
+                                "name": "distro/poky"
+                            }
+                        ]
+                    },
+                    "machine": {
+                        "description": "Target machines",
+                        "options": [
+                            {
+                                "description": "x86-64 system on QEMU (tested)",
+                                "name": "machine/qemux86-64"
+                            },
+                            {
+                                "description": "ARMv8 system on QEMU (untested; faster on Apple silicon)",
+                                "name": "machine/qemuarm64"
+                            }
+                        ]
+                    }
+                },
+                "setup-dir-name": "tlb-infinitum-wrynose"
+            }
+        ]
+    }
+}

@@ -7,6 +7,9 @@ serves a web dashboard.
 
 Built and tested with **Yocto Project 6.0 "Wrynose"** on `qemux86-64`.
 
+**Three ways to try it:** [build the distribution yourself](#1-build-the-distribution-yourself)
+· [watch it run](#2-watch-it-run) · [just the apps, no Yocto](#3-just-the-apps-no-yocto)
+
 ---
 
 ## What a layer is
@@ -78,30 +81,75 @@ SRCREV  = "46868cfb62d4ac6156ba35c73798579c5fe223de"   ← the exact version to 
 S       = "${UNPACKDIR}/${BP}/price-web"               ← which folder of it
 ```
 
+On the device the three programs always talk over **CAN**. They also carry a UDP
+transport for machines that have no CAN bus, such as macOS, which is used only for
+development and demos — see the
+[price-system README](https://github.com/adaliamokhles/price-system). Nothing in this
+layer selects it: a Yocto build targets Linux, so the CAN path is always the one
+compiled in.
+
 Each one also has a `*-crates.inc` file: the full list of Rust libraries with their
 versions and checksums, so BitBake can download them itself instead of letting Cargo
 reach the network during the build.
 
 ---
 
-## Building
+## 1. Build the distribution yourself
 
-**1. Add the layer** to your build (needs `poky` and `meta-openembedded`):
+This produces the real device: a Linux system built from source, with your own kernel
+configuration, and the three applications installed in it.
+
+**Be honest with yourself about the cost first:**
+
+| | |
+|---|---|
+| Host | Linux, or Windows with WSL2. **Not macOS** — Yocto cannot build there |
+| Disk | **~140 GB free**. This is the Yocto Project's own figure, not an exaggeration |
+| Time | hours for a first build (much less with the `-fast` configuration below) |
+| RAM | it works on 6 GB; more is faster |
+
+**Install the host packages** (Ubuntu; from the
+[Yocto system requirements](https://docs.yoctoproject.org/ref-manual/system-requirements.html)):
 
 ```bash
-bitbake-layers add-layer /path/to/meta-mokhles          # register the layer
-bitbake-layers add-layer /path/to/meta-openembedded/meta-oe   # needed for can-utils, nano
+sudo apt-get install build-essential chrpath cpio debianutils diffstat file gawk gcc git \
+  iputils-ping libacl1 libcrypt-dev locales python3 python3-git python3-jinja2 \
+  python3-pexpect python3-pip python3-subunit socat texinfo unzip wget xz-utils zstd
 ```
 
-**2. Build the image:**
+**Set up the build.** Everything — which release of BitBake, OpenEmbedded-Core and this
+layer to use, and how they are wired together — is pinned in
+[`tlb-infinitum.conf.json`](tlb-infinitum.conf.json), so there is nothing to clone or
+configure by hand:
 
 ```bash
+python3 -m venv ~/bitbake-setup-venv && . ~/bitbake-setup-venv/bin/activate
+pip install bitbake-setup
+
+bitbake-setup init --non-interactive \
+  https://raw.githubusercontent.com/adaliamokhles/meta-mokhles/main/tlb-infinitum.conf.json \
+  tlb-infinitum-fast distro/poky machine/qemux86-64
+```
+
+That clones bitbake, openembedded-core, meta-yocto, meta-openembedded and this layer at the
+pinned versions, and writes the build configuration — into
+`~/bitbake-builds/tlb-infinitum-wrynose`. (It may still ask you to confirm the directory
+the first time.)
+
+Drop `--non-interactive` and the trailing choices to be asked instead. The options are:
+
+- **`tlb-infinitum-fast`** — most packages downloaded prebuilt from the Yocto sstate mirror.
+  Far quicker, but needs a fast, reliable connection. Recommended.
+- **`tlb-infinitum`** — everything built from source.
+- **`machine/qemux86-64`** is the tested machine. `machine/qemuarm64` is offered for ARM
+  hosts but has not been tested.
+
+**Build and run:**
+
+```bash
+deactivate                      # leave the Python venv, so the build uses the system Python
+source ~/bitbake-builds/tlb-infinitum-wrynose/build/init-build-env
 bitbake mokhles-image-prices
-```
-
-**3. Run it:**
-
-```bash
 runqemu mokhles-image-prices nographic slirp snapshot
 ```
 
@@ -111,15 +159,49 @@ Then open <http://localhost:8080>. Quit QEMU with `Ctrl+A`, then `X`.
 - `slirp` — user-mode networking, so the device reaches the internet without root
 - `snapshot` — run from a temporary copy of the disk; nothing written survives shutdown
 
-The image recipe forwards the web port through slirp:
+The image recipe forwards the web port out of QEMU:
 
 ```
 QB_SLIRP_OPT = "-netdev user,id=net0,hostfwd=tcp::8080-:8080"
 ```
 
-No login is needed to use the dashboard — `price-system-init` starts everything at boot.
-Logging in (as `root`, no password) is only useful for looking inside, for example with
-`candump vcan0`, or `/etc/init.d/price-system stop`.
+**No login is needed.** `price-system-init` starts everything at boot, so the dashboard is
+up before anyone touches the console. Logging in (as `root`, no password) is only useful
+for looking inside — `candump vcan0`, or `/etc/init.d/price-system stop`.
+
+If you prefer to add this layer to an existing Yocto build instead, it is an ordinary
+layer:
+
+```bash
+bitbake-layers add-layer /path/to/meta-openembedded/meta-oe   # needed for can-utils, nano
+bitbake-layers add-layer /path/to/meta-mokhles
+```
+
+---
+
+## 2. Watch it run
+
+<!-- Replace this with a recording: drag the file into a GitHub issue or release, then
+     paste the link it gives you, as ![demo](URL) for a GIF or a bare URL for an MP4. -->
+
+*(recording: the device booting in QEMU and the dashboard coming up — to be added)*
+
+---
+
+## 3. Just the apps, no Yocto
+
+If you only want to see the dashboard, the three applications also run as ordinary
+programs on any machine — macOS, Linux or Windows — in one command, with no CAN bus and
+no Yocto:
+
+```bash
+git clone https://github.com/adaliamokhles/price-system.git
+cd price-system
+./run-demo.sh
+```
+
+That is the application layer only. None of this repository is involved. See the
+[price-system README](https://github.com/adaliamokhles/price-system).
 
 ---
 
