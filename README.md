@@ -203,10 +203,12 @@ bitbake-layers add-layer /path/to/meta-mokhles
 
 ## 2. Watch it run
 
-<!-- Replace this with a recording: drag the file into a GitHub issue or release, then
-     paste the link it gives you, as ![demo](URL) for a GIF or a bare URL for an MP4. -->
+This is the last of five commands — the four before it install the Yocto host packages,
+set up the build, and compile the whole Linux distribution from source (about an hour,
+done beforehand). All of them are in the section above. This one boots the finished image
+and opens its dashboard.
 
-*(recording: the device booting in QEMU and the dashboard coming up — to be added)*
+https://github.com/user-attachments/assets/56463c65-6167-4f81-9ba5-884e9edbc100
 
 ---
 
