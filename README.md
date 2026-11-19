@@ -150,10 +150,32 @@ Drop `--non-interactive` and the trailing choices to be asked instead. The optio
 deactivate                      # leave the Python venv, so the build uses the system Python
 source ~/bitbake-builds/tlb-infinitum-wrynose/build/init-build-env
 bitbake mokhles-image-prices
+```
+
+On a machine with little RAM, add these to `build/conf/local.conf` first, or the build
+can run out of memory:
+
+```
+BB_NUMBER_THREADS = "2"
+PARALLEL_MAKE = "-j 2"
+```
+
+**Start the device:**
+
+```bash
+~/bitbake-builds/tlb-infinitum-wrynose/layers/meta-mokhles/scripts/start-device.sh
+```
+
+It boots the image in QEMU and opens the dashboard in your browser once the device
+answers. Quit QEMU with `Ctrl+A`, then `X`.
+
+The script is only a convenience; this is the command underneath it:
+
+```bash
 runqemu mokhles-image-prices nographic slirp snapshot
 ```
 
-Then open <http://localhost:8080>. Quit QEMU with `Ctrl+A`, then `X`.
+Then open <http://localhost:8080> yourself.
 
 - `nographic` — stay in the terminal, no QEMU window
 - `slirp` — user-mode networking, so the device reaches the internet without root
